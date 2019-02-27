@@ -1,0 +1,18 @@
+{
+	"service_slug": "test",
+	"settings_service_addresses": "[\"localhost\"]",
+	"cache_num_conn": 1,
+	"cache_host_0": "localhost",
+	"cache_port_0": "6379",
+	"db_engine": "pg",
+	"db_host": "localhost",
+	"db_user": "",
+	"db_pass": "",
+	"db_name": "",
+	"auth_secret": "F65AB8A0573D45699C3B3C3A63910D26B66057BB34EC4FD2B4EBF298370DCFAF",
+	"auth_issuer": "",
+	"auth_expire_access": "1d",
+	"web_port": 3000,
+	"web_url_prefix": "/api/v1",
+	"web_cors": ""
+}

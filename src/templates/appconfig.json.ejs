@@ -1,0 +1,18 @@
+{
+	"service_slug": "<%= props.slugName %>",
+	"settings_service_addresses": "[\"localhost\"]",
+	"cache_num_conn": 1,
+	"cache_host_0": "localhost",
+	"cache_port_0": "6379",
+	"db_engine": "<%= props.dbEngine %>",
+	"db_host": "<%= props.dbHost %>",
+	"db_user": "<%= props.dbUser %>",
+	"db_pass": "<%= props.dbPass %>",
+	"db_name": "<%= props.dbName %>",
+	"auth_secret": "<%= props.authSecret %>",
+	"auth_issuer": "<%= props.authIssuer %>",
+	"auth_expire_access": "<%= props.accessTokenDuration %>",
+	"web_port": <%= props.webPort %>,
+	"web_url_prefix": "<%= props.webURLPrefix %>",
+	"web_cors": "<%= props.webCORS %>"
+}
