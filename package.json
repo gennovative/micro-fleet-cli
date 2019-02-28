@@ -1,20 +1,22 @@
 {
-  "name": "generator-rest-service",
+  "name": "gen-rest",
   "version": "0.0.1",
-  "description": "generator-rest-service CLI",
+  "description": "Generator CLI for backend rest service CLI",
   "private": true,
   "bin": {
-    "generator-rest-service": "bin/generator-rest-service"
+    "gen-rest": "bin/gen-rest"
   },
   "scripts": {
-    "format": "prettier --write **/*.{js,ts,tsx,json}",
-    "lint": "tslint -p .",
-    "compile": "tsc -p .",
-    "build": "yarn format && yarn lint && yarn compile",
+    "build": "npm run compile && npm run test",
+    "compile": "npm run clean && npm run tslint && tsc --pretty && npm run copy-templates",
+    "copy-templates": "cpx \"src/templates/**/*.*\" build/templates",
+    "clean": "rimraf dist coverage __tests__",
+    "tslint": "tslint --fix -p .",
+    "watch": "npm run clean && npm run tslint && npm run copy-templates && tsc --watch --pretty",
     "test": "jest",
-    "watch": "jest --watch",
     "snapupdate": "jest --updateSnapshot",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "watch-jest": "jest --watch"
   },
   "files": [
     "tsconfig.json",
@@ -25,28 +27,23 @@
     "docs",
     "bin"
   ],
-  "license": "MIT",
   "dependencies": {
-    "typescript": "3.2.2",
-    "ts-node": "^7.0.1",
-    "gluegun": "^2.1.0"
+    "gluegun": "^3.0.0",
+    "slugify": "^1.3.4",
+    "ts-node": "~7.0.1"
   },
   "devDependencies": {
-    "@types/node": "^10.12.12",
-    "@types/jest": "^23.3.10",
-    "ts-jest": "^23.10.5",
-    "tslint": "^5.12.0",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-config-standard": "^8.0.1",
-    "prettier": "^1.12.1",
-    "jest": "^23.6.0"
+    "@types/jest": "~23.3",
+    "@types/node": "~10.12",
+    "cpx": "~1.5",
+    "jest": "~23.6",
+    "rimraf": "~2.6",
+    "ts-jest": "~23.10",
+    "tslint": "~5.12.0",
+    "typescript": "~3.2"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
   }
 }

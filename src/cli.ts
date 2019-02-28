@@ -10,7 +10,7 @@ async function run(argv) {
     .src(__dirname)
     .plugins('./node_modules', {
       matching: 'generator-rest-service-*',
-      hidden: true
+      hidden: true,
     })
     .help() // provides default for help, h, --help, -h
     .version() // provides default for version, v, --version, -v
