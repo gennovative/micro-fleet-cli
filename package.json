@@ -1,10 +1,9 @@
 {
-  "name": "gen-rest",
-  "version": "0.0.1",
-  "description": "Generator CLI for backend rest service CLI",
-  "private": true,
+  "name": "@micro-fleet/cli",
+  "version": "1.0.0",
+  "description": "Command line tool for micro-fleet framework",
   "bin": {
-    "gen-rest": "bin/gen-rest"
+    "fleet": "bin/fleet"
   },
   "scripts": {
     "build": "npm run compile && npm run test",
@@ -23,13 +22,13 @@
     "tslint.json",
     "build",
     "LICENSE",
-    "readme.md",
+    "README.md",
     "docs",
     "bin"
   ],
   "dependencies": {
-    "gluegun": "^3.0.0",
-    "slugify": "^1.3.4",
+    "gluegun": "~3.0",
+    "slugify": "~1.3",
     "ts-node": "~7.0.1"
   },
   "devDependencies": {
@@ -45,5 +44,15 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node"
-  }
+  },
+  "author": {
+    "name": "gennovative",
+    "url": "https://github.com/gennovative"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
+  "license": "MIT",
+  "private": false,
+  "repository": "git@github.com:gennovative/micro-fleet-cli.git"
 }

@@ -1,13 +1,27 @@
-# REST service generator CLI
+# Micro-fleet CLI
 
-A CLI for generating REST service based on Micro Fleet framework
+Belongs to Micro Fleet framework, a CLI tool for generating REST service based on Micro Fleet framework.
 
-## How to use
+## INSTALLATION
 
-- `cd` to a folder, execute `gen-rest` and answer questions
+* Stable version: `npm i @micro-fleet/cli`
+* Edge (development) version: `npm i git://github.com/gennovative/micro-fleet-cli.git`
+* See [CHANGELOG.md](CHANGELOG.md) for more details about versions.
 
-## How to dev
+## HOW TO USE
 
-- `npm run compile` or `npm run watch` to trainspile TypeScript source code.
+- Manually create your project folder.
+
+- `cd` to the project folder, execute `fleet` and answer questions
+
+## DEVELOPMENT
+
+### TRANSPILE CODE
+
+- `npm run compile`: To lint then transpile TypeScript into JavaScript.
+- `npm run tslint`: To check code-convention errors.
+- `npm run watch`: To transpile without running unit tests, then watch for changes in *.ts files and re-transpile on save.
+
+### RUN CLI LOCALLY FOR TESTING
 
 - `yarn link` or `npm link` to make the tool globally accessible.

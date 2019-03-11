@@ -1,6 +1,6 @@
 import * as path from 'path'
 
-import { GluegunToolbox, GluegunPrompt } from 'gluegun'
+import { GluegunToolbox } from 'gluegun'
 import slugify from 'slugify'
 
 
