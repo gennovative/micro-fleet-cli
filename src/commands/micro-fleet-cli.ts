@@ -1,8 +1,7 @@
 import * as path from 'path'
 
-import { GluegunToolbox } from 'gluegun'
+import { GluegunToolbox, filesystem } from 'gluegun'
 import slugify from 'slugify'
-
 
 type ExtToolbox  = GluegunToolbox & {
     generator: any,
@@ -41,13 +40,20 @@ type AuthInfo = {
     authExpireAccess?: number,
 }
 
+const {exec} = require('child_process')
+const argv = require('yargs')
+    .argv
+
+const SRC_DIR = 'src/app'
+const CONTROLLERS_DIR = `${SRC_DIR}/controllers`
+const MODELS_DIR = `${SRC_DIR}/models`
 
 module.exports = {
-    name: 'generator-rest-service',
+    name: 'micro-fleet-cli',
     run: async (toolbox: ExtToolbox) => {
         const {
             filesystem,
-            // parameters,
+            parameters,
             template: { generate },
             print: { info },
             prompt,
@@ -64,23 +70,27 @@ module.exports = {
             webCORS: '',
         }
 
+        const {} = parameters.options
+        const {database, d, b, 'web-port': webPort, p, auth} = argv
+        const db = (d && b) ? b : null
+        const restPortFromOption: number = (webPort || p) ? (webPort ? webPort : p) : null
+
+        const dbInfoFromOption: DatabaseInfo = (database || db) ? (database ? readDBOption(database) : readDBOption(db)) : null
+
         const projectInfo: ProjectInfo = await askProjectInfo(toolbox, DEFAULTS)
-        // console.log({ projectInfo })
 
-        const restInfo: RestInfo = await askWebInfo(toolbox, DEFAULTS)
-        // console.log({ restInfo })
+        const restInfo: RestInfo = await askWebInfo(toolbox, DEFAULTS, restPortFromOption)
 
-        const dbInfo: DatabaseInfo = await askDatabase(toolbox, DEFAULTS)
-        // const dbInfo: any = {} // await askDatabase(toolbox, DEFAULTS)
-        // console.log({ dbInfo })
+        const dbInfo: DatabaseInfo = dbInfoFromOption ? dbInfoFromOption : await askDatabase(toolbox, DEFAULTS)
 
         const authInfo: AuthInfo = await askAuth(toolbox, DEFAULTS)
-        // console.log({ authInfo })
 
-        const runAuto = await prompt.confirm('Do you want to automatically install depedencies for the project?')
+        const runAuto = await prompt.confirm('Do you want to automatically install depedencies for this project?')
 
         const projectSlug = slugify(projectInfo.pjName, { lower: true })
         const prepareTpl = prepareTplFactory(projectSlug)
+
+        const dbAddon = dbInfo.hasDatabase ? `\n\t\tthis.attachAddOn(registerDbAddOn());\n` : ``
 
         await generate({
             ...prepareTpl('appconfig.json.ejs'),
@@ -108,7 +118,7 @@ module.exports = {
         await generate({
             ...prepareTpl('package.json.ejs'),
             props: {
-                projectName: projectInfo.pjName,
+                projectName: projectSlug,
                 projectVersion: projectInfo.pjVersion,
                 projectDesc: projectInfo.pjDescription,
             },
@@ -119,23 +129,35 @@ module.exports = {
         })
 
         await generate({
-            ...prepareTpl('src/app/server.ts.ejs'),
+            ...prepareTpl(`${SRC_DIR}/server.ts.ejs`),
+            props: {dbAddon},
         })
 
         await generate({
-            ...prepareTpl('src/app/controllers/WelcomeController.ts.ejs'),
+            ...prepareTpl(`${CONTROLLERS_DIR}/WelcomeController.ts.ejs`),
         })
+        await addControllerToIndex('Welcome')
 
         await generate({
-            ...prepareTpl('src/app/models/model.ts.ejs'),
+            ...prepareTpl(`${CONTROLLERS_DIR}/index.ts.ejs`),
         })
+
+        // await generate({
+        //     ...prepareTpl(`${MODELS_DIR}/model.ts.ejs`),
+        // })
 
         if (runAuto) {
-            const cmdOutput = await system.exec('npm i')
-            info(cmdOutput)
+            const generatedDir = `${process.cwd()}/${projectSlug}/`
+            process.chdir(generatedDir)
+            exec(`npm i`, (err, stdout, stderr) => {
+                if (err) {
+                    console.error(err)
+                }
+                console.log(stdout)
+            })
         }
 
-        info(`Generated REST API at ${filesystem.cwd()}/${projectSlug}`)
+        info(`REST API generated at ${filesystem.cwd()}/${projectSlug}`)
     },
 }
 
@@ -143,12 +165,37 @@ function prepareTplFactory(projectName) {
     return function (tplPath) {
         const filename = path.basename(tplPath)
         const dirPath = path.dirname(tplPath)
-
         return {
             template: tplPath,
             target: path.join(projectName, dirPath, filename.replace(/(.*).ejs$/i, '$1')),
         }
     }
+}
+
+function readDBOption(optionInput: string): DatabaseInfo {
+    const checkRegex = /^(pg|mysql)+@[\w-]+:[\w-]+@[\w-]+:\d+\/[\w-]+$/
+
+    if (checkRegex.test(optionInput)) {
+        return {
+            hasDatabase: true,
+            dbEngine: optionInput.split(/@/)[0],
+            dbUsername: optionInput.split(/@/)[1].split(/:/)[0],
+            dbPassword: optionInput.split(/@/)[1].split(/:/)[1],
+            dbHost: optionInput.split(/@/)[2].split(/:/)[0],
+            dbPort: Number(optionInput.split(/@/)[2].split(/:/)[1].split(/\//)[0]),
+            dbName: optionInput.split(/@/)[2].split(/:/)[1].split(/\//)[1],
+        }
+    }
+    else return null
+}
+
+async function addControllerToIndex(controllerName: string): Promise<any> {
+    controllerName = controllerName.concat('Controller')
+    const strToAppend: string = `export { default as ${controllerName} } from './${controllerName}'\n`
+    const indexTplPath: string = __dirname.replace(/(commands)$/, `templates/${CONTROLLERS_DIR}/index.ts.ejs`)
+    const templateContent: string = await filesystem.readAsync(indexTplPath)
+
+    if (templateContent.indexOf(controllerName) == -1) filesystem.append(indexTplPath, strToAppend)
 }
 
 async function askProjectInfo({ prompt }: ExtToolbox, DEFAULTS): Promise<ProjectInfo> {
@@ -177,7 +224,7 @@ async function askProjectInfo({ prompt }: ExtToolbox, DEFAULTS): Promise<Project
     return answer
 }
 
-async function askWebInfo({ prompt }: ExtToolbox, DEFAULTS): Promise<RestInfo> {
+async function askWebInfo({ prompt }: ExtToolbox, DEFAULTS, portFromOption: number): Promise<RestInfo> {
     const askPort = {
         type: 'input',
         name: 'restPort',
@@ -192,8 +239,9 @@ async function askWebInfo({ prompt }: ExtToolbox, DEFAULTS): Promise<RestInfo> {
         default: DEFAULTS.webURLPrefix,
     }
 
-    const answer = await prompt.ask([askPort, askPrefix]) as RestInfo
-    return answer
+    const askPrefixOnly = await prompt.ask([askPrefix])
+    // tslint:disable-next-line:max-line-length
+    return portFromOption ? {restPort: portFromOption, restPathPrefix: askPrefixOnly.restPathPrefix} : await prompt.ask([askPort, askPrefix]) as RestInfo
 }
 
 async function askDatabase({ prompt }: ExtToolbox, DEFAULTS): Promise<DatabaseInfo> {
@@ -201,7 +249,7 @@ async function askDatabase({ prompt }: ExtToolbox, DEFAULTS): Promise<DatabaseIn
         hasDatabase: false,
     }
 
-    const hasDatabase = await prompt.confirm('Does this service connect to database?')
+    const hasDatabase = await prompt.confirm('Does this service connect to a database?')
     if (!hasDatabase) {
         return dbInfo
     }

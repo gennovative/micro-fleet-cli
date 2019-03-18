@@ -6,14 +6,14 @@ const { build } = require('gluegun')
 async function run(argv) {
   // create a CLI runtime
   const cli = build()
-    .brand('generator-rest-service')
+    .brand('micro-fleet-cli')
     .src(__dirname)
     .plugins('./node_modules', {
       matching: 'generator-rest-service-*',
       hidden: true,
     })
-    .help() // provides default for help, h, --help, -h
-    .version() // provides default for version, v, --version, -v
+    // .help() // provides default for help, h, --help, -h
+    // .version() // provides default for version, v, --version, -v
     .create()
 
   // and run it

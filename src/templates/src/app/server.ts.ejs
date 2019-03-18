@@ -22,12 +22,10 @@ class RestAPIService extends MicroServiceBase {
 
 		// IMPORTANT - Default is `false`
 		this._configProvider.enableRemote = false
-		this.attachAddOn(registerIdAddOn())
-		this.attachAddOn(registerDbAddOn())
-		
-		const webAddOn = registerWebAddOn()
-		webAddOn.addGlobalErrorHandler(ErrorHandlerFilter)
-		this.attachAddOn(webAddOn)
+<%= props.dbAddon %>
+		const webAddOn = registerWebAddOn();
+		webAddOn.addGlobalErrorHandler(ErrorHandlerFilter);
+		this.attachAddOn(webAddOn);
 
 		// TODO: Should have registerAuthAddOn
 		const authAddon = this._depContainer.resolve<AuthAddOn>(WT.AUTH_ADDON)
